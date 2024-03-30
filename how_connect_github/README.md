@@ -43,6 +43,16 @@ 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
 github.com/itrcAI/parvaresh/
 
 ```
+
+اگر زمانی token  تغییر کرد شما قادر به کاری نیستید و برای اتصال از کامند زیر استفاده کنید : 
+
+```bash
+
+git remote set-url origin https://username:new_token@url_of_repo
+
+```
+
+
 بعد از کلون کردن باید داخل ریپازتوری خود شوید 
 
 ```bash
@@ -90,3 +100,8 @@ git push -f origin main
 
 
 ```
+
+
+
+
+

@@ -1,25 +1,40 @@
 import numpy as np
 import pandas as pd
 import os
+from datetime import datetime, timedelta
+
 
 from tool.extract_date_and_spectrum import extract_date_and_spectrum
 from tool.get_all_spectrum import get_all_spectrum
 from tool.get_all_day import get_all_day
 from tool.create_folder import create_folder
+from tool.save_json import save_json
+
+from tool.fix_Meta.fix_date import fix_date
+from tool.fix_Meta.fix_geomfeat import fix_geomfeat
+from tool.fix_Meta.fix_label import fix_label
+
+
 
 class convert_data:
     def __init__(self,
                  df : pd.DataFrame, 
                  class_column : str,
-                 start_date : str,
                  geomfeat_columns : tuple,
-                 path : str) -> None:
+                 path : str,
+                 start_date : datetime,
+                 step : int,
+                 iter : int) -> None:
         
         self.df = df
         self.class_column = class_column
         self.start_date = start_date
         self.geomfeat_column = geomfeat_columns
         self.folder_path_data , self.folder_path_META = create_folder(path)
+        
+        self.start_date = start_date
+        self.step = step
+        self.iter = iter
         
         self.date_and_spectrum = extract_date_and_spectrum(df)
         self.all_spectrum = get_all_spectrum(self.date_and_spectrum)
@@ -33,10 +48,28 @@ class convert_data:
                 spectrum_vector = self._create_vector_spectrum()
                 vector_day = self._make_vector_day(index, day, spectrum_vector)
                 vector.append(vector_day)
-                print(f"{index} --> {day}")
+                
+            print(f"{index} --> saved ")
             vector = np.array(vector)
             path =  self.folder_path_data + f"/{index}.npy"
             np.save(path, vector)
+
+        
+        geomfeat = fix_geomfeat(self.df , self.geomfeat_column)
+        label = fix_label(self.df, self.class_column)
+        date = fix_date(self.start_date , self.step , self.iter)
+        
+        save_json(self.folder_path_META + "/geomfeat.json", geomfeat)
+        print("geomfeat METADATA saved successfully")
+        
+        save_json(self.folder_path_META + "/label.json", label)
+        print("label METADATA saved successfully")
+
+        save_json(self.folder_path_META + "/date.json", date)
+        print("date METADATA saved successfully")
+
+
+        
                     
     def _make_vector_day(self, 
                         index : int,
@@ -51,30 +84,18 @@ class convert_data:
                         list(spectrum_vector.values())
                            )
                 
-            
-        
     def _create_vector_spectrum(self) -> dict:
         return {spectrum: np.nan for spectrum in self.all_spectrum}
 
     
-    def _create_folder(self, 
-                       path : str) -> None:
-        
-        os.makedirs(path, exist_ok=True)
-        folder_path_root = os.path.abspath(path)
-        
-        self.folder_path_data =  folder_path_root = "/data"
-        os.makedirs(self.folder_path_data, exist_ok=True)
-
-        self.folder_path_META =  folder_path_root = "/META"
-        os.makedirs(self.folder_path_META, exist_ok=True)
-        
 df = pd.read_excel("/home/reza/Desktop/data sets/BAHAR_DATA_S1_S2_0301_0630.xlsx")
 
-model = convert_data(df, 
-                 class_column = None,
-                 start_date = None,
-                 geomfeat_columns = None,
-                 path = "/home/reza/Desktop/output")
+model = convert_data(df = df, 
+                 class_column = "Name",
+                 geomfeat_columns = ("X", "Y"),
+                 path = "/home/reza/Desktop/output",
+                 start_date = datetime(2015, 12, 3),
+                 step = 5,
+                 iter = 25)
 
 model.fit()

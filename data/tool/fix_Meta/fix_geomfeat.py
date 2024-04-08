@@ -1,7 +1,6 @@
 import pandas as pd
 
 def fix_geomfeat(df : pd.DataFrame, 
-                 class_column : str,
                  geomfeat_columns : tuple):
     geomfeat = dict()
     for index in range(df.shape[0]):

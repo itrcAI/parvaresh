@@ -24,8 +24,7 @@ git clone https://username:token@url_of_repo
 
 از توکن زیر استفاده کنید : 
 ```bash
-
-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
+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
 ```
 
 ###  username 
